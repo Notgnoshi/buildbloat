@@ -67,8 +67,9 @@ def calculate_build_durations(
     """Calculate build durations for each entry, summing together any duplicate filenames."""
     durations: Dict[str, int] = {}
 
-    for start, end, restat, target, cmdhash in entries:
+    for start, end, _restat, target, _cmdhash in entries:
         duration = end - start
+        duration = duration / 1000  # ms -> s
         if target in durations:
             # A duplicate entry is an indication of something spooky
             logging.warning("Duplicate build entry for target: '%s'", target)
