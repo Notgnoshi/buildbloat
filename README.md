@@ -1,14 +1,19 @@
 # buildbloat2
 
 An updated version of https://github.com/nico/buildbloat targeting
-https://github.com/evmar/webtreemap v2.
+https://github.com/Notgnoshi/webtreemap v2.
 
 ## How to use
 
-Install https://github.com/evmar/webtreemap
+Install https://github.com/Notgnoshi/webtreemap
 
 ```sh
-npm install -g webtreemap
+git clone https://github.com/Notgnoshi/webtreemap.git
+cd webtreemap
+# Install the dependencies
+npm install
+# Link the script globally
+npm link
 ```
 
 Do a clean build of your project with Ninja. If you're using https://ccache.dev/ disable it for this
