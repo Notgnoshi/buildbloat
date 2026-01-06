@@ -4,8 +4,9 @@
 import argparse
 import io
 import logging
+import os
 import sys
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 
 def parse_args():
@@ -20,6 +21,7 @@ def parse_args():
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
         help="Set the logging output level. Defaults to INFO.",
     )
+    parser.add_argument("--build-dir", "-b", type=str, help="Path to the build directory")
     group = parser.add_argument_group()
     group.add_argument(
         "input",
@@ -63,16 +65,20 @@ def parse_ninja_log(log: io.TextIOWrapper) -> Iterable[Tuple[int, int, int, str,
 
 def calculate_build_durations(
     entries: Iterable[Tuple[int, int, int, str, str]],
+    build_dir: Optional[str] = None,
 ) -> Dict[str, int]:
     """Calculate build durations for each entry, summing together any duplicate filenames."""
     durations: Dict[str, int] = {}
 
     for start, end, _restat, target, _cmdhash in entries:
+        # If a build directory is given, rewrite any absolute paths to be relative to the build
+        # directory. Nominally, Ninja logs should only reference paths in the build directory, but
+        # I've seen cases where absolute paths (in the build directory) sneak in.
+        if build_dir and target.startswith("/"):
+            target = os.path.relpath(target, build_dir)
         duration = end - start
         duration = duration / 1000  # ms -> s
         if target in durations:
-            # A duplicate entry is an indication of something spooky
-            logging.warning("Duplicate build entry for target: '%s'", target)
             durations[target] += duration
         else:
             durations[target] = duration
@@ -88,7 +94,7 @@ def output_du_format(output: io.TextIOWrapper, entries: Dict[str, int]):
 
 def main(args):
     entries = parse_ninja_log(args.input)
-    entries = calculate_build_durations(entries)
+    entries = calculate_build_durations(entries, args.build_dir)
     output_du_format(args.output, entries)
 
 

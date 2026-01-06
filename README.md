@@ -12,7 +12,7 @@ git clone https://github.com/Notgnoshi/webtreemap.git
 cd webtreemap
 # Install the dependencies
 npm install
-# Link the script globally
+# Make the script globally available
 npm link
 ```
 
@@ -26,9 +26,15 @@ cmake -B ./build/ -G Ninja
 cmake --build ./build/ --parallel
 ```
 
-Then run buildbloat on the resulting `.ninja_log` file:
+Then run buildbloat on the normalized log file:
+
+> [!WARNING]
+>
+> The `.ninja_log` targets can contain a mix of absolute and relative paths; they're all supposed to
+> be artifacts in the build directory, but it is helpful to normalize them all to be relative to the
+> build directory. This is what the `buildbloat.py --build-dir <DIR>` option does.
 
 ```sh
-./buildbloat.py ./build/.ninja_log | webtreemap -o buildbloat.html
-xdg-open buildbloat.html
+./buildbloat.py --build-dir ../project/build/ | webtreemap -o project-bloat.html
+xdg-open project-bloat.html
 ```
